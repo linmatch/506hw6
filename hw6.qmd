@@ -1,0 +1,25 @@
+---
+title: "hw6"
+format: html
+editor: visual
+---
+
+```{r}
+library(nycflights13)
+library(dplyr)
+library(boot)
+```
+
+```{r}
+df<-as.data.frame(flights)
+
+## create a set of stratified sample
+strat_sample<-df %>%
+  group_by(dest) %>%
+  sample_n(size = 10, replace = TRUE)
+
+## write a function to calculate the mean air time
+avg_air_time <- function(data,i){
+  sample_data <- 
+}
+```
