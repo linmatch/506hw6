@@ -8,18 +8,50 @@ editor: visual
 library(nycflights13)
 library(dplyr)
 library(boot)
+library(parallel)
+detectCores()
 ```
 
 ```{r}
 df<-as.data.frame(flights)
 
-## create a set of stratified sample
-strat_sample<-df %>%
-  group_by(dest) %>%
-  sample_n(size = 10, replace = TRUE)
+set.seed(123)
 
-## write a function to calculate the mean air time
-avg_air_time <- function(data,i){
-  sample_data <- 
+##function to calculate the mean air time and corresponding confidence interval
+avg_calculate <- function(data){
+  avg_air_time <- mean(data$air_time, na.rm = TRUE)
+  CI <- t.test(data$air_time, conf.level = 0.95)$conf.int
+  return(c(avg_air_time, CI[1], CI[2]))
 }
+
+## create stratified sample
+strat_sample<- function(dat){
+  sampled_data <- df %>%
+  group_by(origin,dest) %>%
+  sample_n(size = n(), replace = TRUE)
+  return(avg_calculate(sampled_data))
+}
+
+##define number of bootstrapped samples
+n_bs <- 10
+
+## result without parallel
+res1 <- lapply(seq_len(n_bs), function(x) strat_sample(df))
+res1_df <- do.call(rbind, res1)
+colnames(res1_df) <- c("estimate", "lower CI", "upper CI")
+head(res1_df)
+```
+
+```{r}
+## result with parallel
+res2 <- mclapply(seq_len(n_bs), function(x) strat_sample(df))
+res2_df <- do.call(rbind, res2)
+colnames(res2_df) <- c("estimate", "lower CI", "upper CI")
+head(res2_df)
+```
+
+```{r}
+## compare performance difference
+system.time(res1 <- lapply(seq_len(reps), function(x) boot(recs)))
+system.time(res2 <- mclapply(seq_len(reps), function(x) boot(recs)))
 ```
