@@ -52,6 +52,6 @@ head(res2_df)
 
 ```{r}
 ## compare performance difference
-system.time(res1 <- lapply(seq_len(reps), function(x) boot(recs)))
-system.time(res2 <- mclapply(seq_len(reps), function(x) boot(recs)))
+system.time(res1 <- lapply(seq_len(n_bs), function(x) strat_sample(df)))
+system.time(res2 <- mclapply(seq_len(n_bs), function(x) strat_sample(df)))
 ```
